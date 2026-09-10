@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.10)
+
+# Имя вашего проекта
+project(HelloWorldProject LANGUAGES CXX)
+
+# Указываем стандарт C++ (например, C++17)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Создаем исполняемый .exe файл (назовем его MyProgram)
+# Перечисляем ТОЛЬКО .cpp файлы. Заголовочные файлы (.h) CMake найдет сам.
+add_executable(MyProgram main.cpp util/print.cpp)
+

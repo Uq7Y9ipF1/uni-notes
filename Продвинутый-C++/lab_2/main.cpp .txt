@@ -1,0 +1,7 @@
+#include "util/print.h"
+
+int main() {
+    // Вызываем нашу функцию
+    printHelloWorld();
+    return 0;
+}
