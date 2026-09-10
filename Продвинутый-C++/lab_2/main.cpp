@@ -1,4 +1,4 @@
-#include "util/print.h"
+#include "print.h"
 
 int main() {
     // Вызываем нашу функцию
