@@ -1,0 +1,10 @@
+^C:\USERS\8241552\UNI-NOTES\ПРОДВИНУТЫЙ-C++\LAB_1\TEST\BUILD\CMAKEFILES\5E1FD946319B3A12EB8D0AA7EA2AFE81\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/8241552/uni-notes/Продвинутый-C++/lab_1/test -BC:/Users/8241552/uni-notes/Продвинутый-C++/lab_1/test/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/8241552/uni-notes/Продвинутый-C++/lab_1/test/build/HelloWorldProject.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
