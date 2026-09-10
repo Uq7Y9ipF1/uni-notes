@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.10)
+project(SharedExample LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_library(print_shared SHARED util/print.cpp)
+
+target_compile_definitions(print_shared PRIVATE BUILD_SHARED_LIBS)
+
+target_include_directories(print_shared PUBLIC util)
+
+add_executable(MySharedProgram main.cpp)
+
+target_link_libraries(MySharedProgram PRIVATE print_shared)

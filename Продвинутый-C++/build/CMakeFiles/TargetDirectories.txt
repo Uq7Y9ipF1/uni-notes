@@ -1,0 +1,4 @@
+C:/Users/8241552/uni-notes/Продвинутый-C++/lab_2/build/CMakeFiles/print_shared.dir
+C:/Users/8241552/uni-notes/Продвинутый-C++/lab_2/build/CMakeFiles/MySharedProgram.dir
+C:/Users/8241552/uni-notes/Продвинутый-C++/lab_2/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/8241552/uni-notes/Продвинутый-C++/lab_2/build/CMakeFiles/ZERO_CHECK.dir

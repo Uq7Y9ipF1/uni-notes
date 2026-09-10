@@ -1,0 +1,3 @@
+C:/Users/8241552/uni-notes/Продвинутый-C++/lab_2/build1/CMakeFiles/MyProgram.dir
+C:/Users/8241552/uni-notes/Продвинутый-C++/lab_2/build1/CMakeFiles/ALL_BUILD.dir
+C:/Users/8241552/uni-notes/Продвинутый-C++/lab_2/build1/CMakeFiles/ZERO_CHECK.dir
