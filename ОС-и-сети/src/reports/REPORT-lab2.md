@@ -44,35 +44,57 @@ void RevertString(char *str) {
 4. результат печатается, память освобождается `free` (иначе — утечка).
 
 ### Задание 3 — статическая и динамическая библиотеки
-Статическая (код библиотек встраивается в исполняемый файл на линковке):
+Статическая (код библиотеки встраивается в исполняемый файл на этапе линковки):
 ```bash
 gcc -c revert_string.c -o revert_string.o
 ar rcs librevstr.a revert_string.o
-gcc main.c -L. -lrevstr -o static_app
-./static_app "Hello"        # -> olleH
+# ВАЖНО: если в папке уже лежит librevstr.so, флаг -lrevstr выберет её, а не .a!
+# Поэтому статическую версию линкуем явным именем файла:
+gcc main.c -L. -l:librevstr.a -o static_app
+./static_app "Hello"        # -> Reverted: olleH
 ```
 Динамическая (подгружается рантайм-линковщиком ld.so при запуске):
 ```bash
-gcc -c -fPIC revert_string.c -o revert_string.o   # позиционно-независимый код
-gcc -shared revert_string.o -o librevstr.so
+gcc -c -fPIC revert_string.c -o revert_string_pic.o   # позиционно-независимый код
+gcc -shared revert_string_pic.o -o librevstr.so
 gcc main.c -L. -lrevstr -o dynamic_app
-export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH          # путь для рантайм-поиска
-./dynamic_app "World"       # -> dlroW
+export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH              # путь для рантайм-поиска
+./dynamic_app "World"        # -> Reverted: dlroW
 ```
+Проверка типа линковки: `ldd static_app` — revstr отсутствует (код внутри бинарника), `ldd dynamic_app` — `librevstr.so => not found` без LD_LIBRARY_PATH (библиотека подгружается извне).
 Ключевое отличие: `.a` увеличивается размер бинарника и библиотека «замораживается»; `.so` переиспользуется многими процессами и обновляется без пересборки приложений, но требует поиска в рантайме (`LD_LIBRARY_PATH` или `/etc/ld.so.cache`).
 
-### Задание 4 — CUnit-тесты (`lab2/tests`)
+### Задание 4 — CUnit-тесты (`lab2/src/tests`)
+Установка фреймворка (это же делает `update.sh` в корне репозитория):
 ```bash
-gcc tests.c -L../revert_string -lrevstr -lcunit -o tests_app
+sudo apt -y install libcunit1 libcunit1-dev
+```
+Компиляция тестов с ТОЙ ЖЕ динамической библиотекой, что и в задании 3 (один файл `librevstr.so`):
+```bash
+cd ../tests
+gcc tests.c -I../revert_string -L../revert_string -lrevstr -lcunit -o tests_app
 export LD_LIBRARY_PATH=../revert_string:$LD_LIBRARY_PATH
 ./tests_app
 ```
-Тесты проверяют переворот пустой строки, строки чётной/нечётной длины и одиночного символа.
+Флаг `-I../revert_string` нужен, чтобы компилятор нашёл `revert_string.h`; `-lrevstr` вместе с `-L` указывает на `.so`; тесты и `main.c` используют один и тот же объект библиотеки.
 
-## Проверка (фактические запуски)
-- `swap_app` → `b a`;
-- `static_app "Hello"` и `dynamic_app "World"` → `olleH`, `dlroW`;
-- `tests_app`: **CUnit — Run Summary: asserts 4, 4 passed, 0 failed**.
+Тесты (`tests.c`) проверяют 4 случая: `"Hello"→"olleH"`, строка с пробелами `"String with spaces"→"secaps htiw gnirtS"`, нечётная длина `"abc"→"cba"`, чётная длина `"abcd"→"dcba"`.
+
+## Ответы на вопросы из ТЗ («Необходимые знания»)
+- **Чем отличается передача по значению от передачи по указателю?** Параметры C копируются, поэтому изменить переменную вызывающего можно только передав её адрес (`char *left`) и разыменовав (`*left`). Это суть задания 1.
+- **Стек vs куча?** Стек — автоматическое выделение/освобождение локальных переменных при вызове/возврате функции, быстрый, ограниченный размер. Куча — ручное управление через `malloc/free`, размер ограничен RAM, живёт до явного освобождения; в `main.c` копия строки выделяется в куче, т.к. её размер известен только в рантайме. Забытый `free` = утечка, `free` того, что не из malloc = неопределённое поведение.
+- **Аргументы командной строки?** `main(int argc, char *argv[])`: `argc` — количество аргументов (включая имя программы), `argv[0]` — имя программы, `argv[1..]` — аргументы. Программа проверяет `argc != 2` и печатает usage.
+- **Этапы сборки?** Препроцессор (раскрытие `#include`, макросов) → компилятор (`.c` → ассемблер → `.o`, опция `-c`) → линковщик (сшивает `.o` и библиотеки в исполняемый файл).
+- **Статическая vs динамическая линковка?** Статическая: код `.a` копируется внутрь бинарника линковщиком — самодостаточный файл, но больше размер и «замороженная» библиотека. Динамическая: в бинарнике только ссылка, `lib*.so` ищет рантайм-линковщик `ld.so` при запуске — переиспользование между процессами, обновление без пересборки, но нужен поиск библиотеки (`LD_LIBRARY_PATH`, `/etc/ld.so.conf`).
+- **Опции gcc:** `-c` — только компиляция в `.o` без линковки; `-o FILE` — имя результата; `-Ipath` — путь для поиска `.h`; `-Lpath` — путь для поиска библиотек при линковке; `-lname` — линковать `libname.so`/`libname.a` (для явной статической — `-l:libname.a`); `-shared` — собрать разделяемую библиотеку; `-fPIC` — позиционно-независимый код (обязателен для `.so`).
+- **Что делает `ar`?** Утилита архивации: `ar rcs librevstr.a revert_string.o` создаёт (`c`) статический архив, добавляя (`r`) файлы и строя индекс символов (`s`) — без индекса линкер не найдёт `RevertString`.
+- **Что такое `LD_LIBRARY_PATH`?** Переменная окружения со списком каталогов, которые `ld.so` обходит первыми при поиске `.so` (до стандартных `/lib`, `/usr/lib` и кэша). Без неё запуск `dynamic_app` падает с `error while loading shared libraries: librevstr.so`.
+
+## Проверка (фактические запуски, перепроверено сегодня)
+- `gcc main.c swap.c -o swap_app && ./swap_app` → `b a`;
+- `gcc main.c -L. -l:librevstr.a -o static_app && ./static_app "Hello"` → `Reverted: olleH`;
+- `gcc main.c -L. -lrevstr -o dynamic_app && LD_LIBRARY_PATH=. ./dynamic_app "World"` → `Reverted: dlroW`;
+- `tests_app` → **Run Summary: suites 1/1, tests 1/1, asserts 4 ran, 4 passed, 0 failed** (вывод совпадает с эталонным из lab2.md).
 
 ## Вывод
 Освоены передача по указателю, ручное управление памятью кучи, различие статической и динамической линковки (`-fPIC`, `-shared`, `ar rcs`, `LD_LIBRARY_PATH`) и модульное тестирование на CUnit.
