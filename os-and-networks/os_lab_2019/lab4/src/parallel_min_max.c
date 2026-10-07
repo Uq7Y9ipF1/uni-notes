@@ -49,8 +49,6 @@ int main(int argc, char **argv) {
   bool with_files = false;
 
   while (true) {
-    int current_optind = optind ? optind : 1;
-
     static struct option options[] = {{"seed", required_argument, 0, 0},
                                       {"array_size", required_argument, 0, 0},
                                       {"pnum", required_argument, 0, 0},
@@ -222,13 +220,11 @@ int main(int argc, char **argv) {
   } else {
     bool timed_out = false;
     while (active_child_processes > 0) {
-      pid_t finished = -1;
       for (int i = 0; i < pnum; i++) {
         if (children[i] <= 0) continue;
         int status;
         pid_t r = waitpid(children[i], &status, WNOHANG);
         if (r == children[i]) {
-          finished = children[i];
           children[i] = -1;
           active_child_processes--;
           break;
