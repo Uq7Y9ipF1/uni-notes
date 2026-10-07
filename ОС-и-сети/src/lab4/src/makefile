@@ -8,10 +8,10 @@ parallel_min_max : utils.o find_min_max.o utils.h find_min_max.h parallel_min_ma
 	$(CC) $(CFLAGS) -o parallel_min_max parallel_min_max.c utils.o find_min_max.o
 
 process_memory : process_memory.c
-	$(CC) -o process_memory process_memory.c
+	$(CC) $(CFLAGS) -o process_memory process_memory.c
 
 zombie : zombie.c
-	$(CC) -o zombie zombie.c
+	$(CC) $(CFLAGS) -o zombie zombie.c
 
 utils.o : utils.h
 	$(CC) -c -o utils.o utils.c $(CFLAGS)
